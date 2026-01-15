@@ -8,10 +8,12 @@ from geometry import (
     calculate_circle_area,
     calculate_triangle_area,
     calculate_rectangle_area,
+    calculate_rhombus_area,
     calculate_square_perimeter,
     calculate_circle_perimeter,
     calculate_triangle_perimeter,
     calculate_rectangle_perimeter,
+    calculate_rhombus_perimeter,
     calculate,
     SUPPORTED_SHAPES,
     SUPPORTED_CALCULATIONS,
@@ -107,6 +109,50 @@ class TestRectangleArea:
             calculate_rectangle_area(5, -1)
 
 
+class TestRhombusArea:
+    """Tests for rhombus area calculation."""
+
+    def test_rhombus_area_90_degrees(self):
+        # At 90 degrees, rhombus is a square: side^2 * sin(90) = side^2
+        assert calculate_rhombus_area(4, 90) == pytest.approx(16)
+
+    def test_rhombus_area_45_degrees(self):
+        # side^2 * sin(45) = 4^2 * sqrt(2)/2 = 16 * sqrt(2)/2
+        expected = 16 * math.sin(math.radians(45))
+        assert calculate_rhombus_area(4, 45) == pytest.approx(expected)
+
+    def test_rhombus_area_30_degrees(self):
+        # side^2 * sin(30) = 5^2 * 0.5 = 12.5
+        assert calculate_rhombus_area(5, 30) == pytest.approx(12.5)
+
+    def test_rhombus_area_60_degrees(self):
+        expected = 3 * 3 * math.sin(math.radians(60))
+        assert calculate_rhombus_area(3, 60) == pytest.approx(expected)
+
+    def test_rhombus_area_zero_side(self):
+        assert calculate_rhombus_area(0, 45) == 0
+
+    def test_rhombus_area_float(self):
+        expected = 2.5 * 2.5 * math.sin(math.radians(60))
+        assert calculate_rhombus_area(2.5, 60) == pytest.approx(expected)
+
+    def test_rhombus_area_negative_side_raises(self):
+        with pytest.raises(ValueError):
+            calculate_rhombus_area(-1, 45)
+
+    def test_rhombus_area_zero_angle_raises(self):
+        with pytest.raises(ValueError):
+            calculate_rhombus_area(5, 0)
+
+    def test_rhombus_area_negative_angle_raises(self):
+        with pytest.raises(ValueError):
+            calculate_rhombus_area(5, -45)
+
+    def test_rhombus_area_angle_over_90_raises(self):
+        with pytest.raises(ValueError):
+            calculate_rhombus_area(5, 91)
+
+
 class TestSquarePerimeter:
     """Tests for square perimeter calculation."""
 
@@ -200,6 +246,23 @@ class TestRectanglePerimeter:
             calculate_rectangle_perimeter(5, -1)
 
 
+class TestRhombusPerimeter:
+    """Tests for rhombus perimeter calculation."""
+
+    def test_rhombus_perimeter_basic(self):
+        assert calculate_rhombus_perimeter(4) == 16
+
+    def test_rhombus_perimeter_zero(self):
+        assert calculate_rhombus_perimeter(0) == 0
+
+    def test_rhombus_perimeter_float(self):
+        assert calculate_rhombus_perimeter(2.5) == 10.0
+
+    def test_rhombus_perimeter_negative_raises(self):
+        with pytest.raises(ValueError):
+            calculate_rhombus_perimeter(-1)
+
+
 class TestCLIArea:
     """Tests for the Click CLI area calculations."""
 
@@ -226,6 +289,12 @@ class TestCLIArea:
         result = runner.invoke(calculate, ["--shape", "rectangle", "--calculation", "area"], input="4\n5\n")
         assert result.exit_code == 0
         assert "Area of rectangle: 20" in result.output
+
+    def test_rhombus_area_cli(self):
+        runner = CliRunner()
+        result = runner.invoke(calculate, ["--shape", "rhombus", "--calculation", "area"], input="5\n30\n")
+        assert result.exit_code == 0
+        assert "Area of rhombus:" in result.output
 
 
 class TestCLIPerimeter:
@@ -254,6 +323,12 @@ class TestCLIPerimeter:
         result = runner.invoke(calculate, ["--shape", "rectangle", "--calculation", "perimeter"], input="4\n5\n")
         assert result.exit_code == 0
         assert "Perimeter of rectangle: 18" in result.output
+
+    def test_rhombus_perimeter_cli(self):
+        runner = CliRunner()
+        result = runner.invoke(calculate, ["--shape", "rhombus", "--calculation", "perimeter"], input="4\n")
+        assert result.exit_code == 0
+        assert "Perimeter of rhombus: 16" in result.output
 
 
 class TestCLIValidation:
